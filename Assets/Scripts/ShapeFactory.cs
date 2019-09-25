@@ -16,6 +16,7 @@ public class ShapeFactory : ScriptableObject
         Shape shapeInstance = Instantiate(_shapePrefabs[shapeID]);
         shapeInstance.ShapeID = shapeID;
         shapeInstance.SetMaterial(_materials[materialID], materialID);
+        shapeInstance.SetColor(Random.ColorHSV(0f, 1f, 0.5f, 1f, 0.25f, 1f, 1f, 1f));
         return shapeInstance;
     }
 

@@ -4,11 +4,42 @@ using UnityEngine;
 
 public class Shape : PersistableObject
 {
+    private static int ColorPropertyId = Shader.PropertyToID("_Color");
+    private static MaterialPropertyBlock _sharedPropertyBlock = null;
+
+    private static MaterialPropertyBlock SharedPropertyBlock
+    {
+        get
+        {
+            if (null == _sharedPropertyBlock)
+            {
+                _sharedPropertyBlock = new MaterialPropertyBlock();
+            }
+
+            return _sharedPropertyBlock;
+        }
+    }
+
     private int _shapeID = int.MinValue;
 
     public int MaterialID { get; private set; } = int.MinValue;
 
     private Color _color = Color.white;
+
+    private Renderer _renderer = null;
+
+    private Renderer MeshRenderer
+    {
+        get
+        {
+            if (null == _renderer)
+            {
+                _renderer = GetComponent<MeshRenderer>();
+            }
+
+            return _renderer;
+        }
+    }
 
     public int ShapeID
     {
@@ -32,14 +63,15 @@ public class Shape : PersistableObject
 
     public void SetMaterial(Material material, int materialId)
     {
-        GetComponent<MeshRenderer>().material = material;
+        MeshRenderer.material = material;
         MaterialID = materialId;
     }
 
     public void SetColor(Color color)
     {
         _color = color;
-        GetComponent<MeshRenderer>().material.color = color;
+        SharedPropertyBlock.SetColor(ColorPropertyId, _color);
+        MeshRenderer.SetPropertyBlock(SharedPropertyBlock);
     }
 
     public override void Save(GameDataWriter writer)
