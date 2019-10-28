@@ -17,6 +17,8 @@ public class ShapeFactory : ScriptableObject
 
     private List<List<Shape>> _pools = null;
 
+    private Scene _poolScene = default;
+
     public Shape Get(int shapeID = 0, int materialID = 0)
     {
         Shape shapeInstance = null;
@@ -36,9 +38,14 @@ public class ShapeFactory : ScriptableObject
                 shapeInstance.gameObject.SetActive(true);
                 pool.RemoveAt(pool.Count - 1);
             }
+            else
+            {
+                shapeInstance = Instantiate(_shapePrefabs[shapeID]);
+                shapeInstance.ShapeID = shapeID;
+                SceneManager.MoveGameObjectToScene(shapeInstance.gameObject, _poolScene);
+            }
         }
-
-        if (null == shapeInstance)
+        else
         {
             shapeInstance = Instantiate(_shapePrefabs[shapeID]);
             shapeInstance.ShapeID = shapeID;
@@ -79,5 +86,27 @@ public class ShapeFactory : ScriptableObject
         {
             _pools.Add(new List<Shape>());
         }
+
+
+        if (Application.isEditor)
+        {
+            _poolScene = SceneManager.GetSceneByName(name);
+            if (_poolScene.isLoaded)
+            {
+                GameObject[] rootObjects = _poolScene.GetRootGameObjects();
+                foreach (var shapeObj in rootObjects)
+                {
+                    Shape pooledShape = shapeObj.GetComponent<Shape>();
+                    if (!pooledShape.gameObject.activeSelf)
+                    {
+                        _pools[pooledShape.ShapeID].Add(pooledShape);
+                    }
+                }
+
+                return;
+            }
+        }
+
+        _poolScene = SceneManager.CreateScene(name);
     }
 }

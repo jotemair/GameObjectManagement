@@ -1,10 +1,11 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class Game : PersistableObject
 {
-    const int saveVersion = 2;
+    const int saveVersion = 3;
 
     [SerializeField]
     public ShapeFactory _shapeFactory = null;
@@ -28,6 +29,11 @@ public class Game : PersistableObject
 
     [SerializeField]
     private PersistentStorage _storage = null;
+
+    [SerializeField]
+    private int _levelCount = 2;
+
+    private int _currentLevel = -1;
 
     [SerializeField]
     private float _creationSpeed = 0f;
@@ -61,9 +67,28 @@ public class Game : PersistableObject
 
     private static Game _instance = null;
 
-    public Game Instance
+    public static Game Instance
     {
         get { return _instance; }
+    }
+
+    private void Start()
+    {
+        if (Application.isEditor)
+        {
+            for (int i = 0; i < SceneManager.sceneCount; i++)
+            {
+                Scene loadedScene = SceneManager.GetSceneAt(i);
+                if (loadedScene.name.Contains("Level "))
+                {
+                    SceneManager.SetActiveScene(loadedScene);
+                    _currentLevel = int.Parse(loadedScene.name.Substring(loadedScene.name.Length - 1));
+                    return;
+                }
+            }
+        }
+
+        StartCoroutine(LoadLevel(1));
     }
 
     private void OnEnable()
@@ -106,6 +131,17 @@ public class Game : PersistableObject
         else if (Input.GetKeyDown(_loadGameKey))
         {
             LoadGame();
+        }
+        else
+        {
+            for (int i = 1; i <= _levelCount; ++i)
+            {
+                if (Input.GetKeyDown(KeyCode.Alpha0 + i))
+                {
+                    StartNewGame();
+                    StartCoroutine(LoadLevel(i));
+                }
+            }
         }
     }
 
@@ -159,6 +195,7 @@ public class Game : PersistableObject
         writer.Write(saveVersion);
 
         writer.Write(_shapes.Count);
+        writer.Write(_currentLevel);
         foreach (var shape in _shapes)
         {
             if (saveVersion > 1)
@@ -181,11 +218,36 @@ public class Game : PersistableObject
         }
 
         int count = reader.ReadInt();
+
+        StartCoroutine(LoadLevel((saveVersion < 3) ? 1 : reader.ReadInt()));
+
         for (int i = 0; i < count; ++i)
         {
             Shape shapeInstance = _shapeFactory.Get(reader.ReadInt(), ((fileVersion > 1) ? (reader.ReadInt()) : (0)));
             shapeInstance.Load(reader);
             _shapes.Add(shapeInstance);
         }
+    }
+
+    private IEnumerator LoadLevel(int idx)
+    {
+        if (_currentLevel != idx)
+        {
+            if (-1 != _currentLevel)
+            {
+                yield return SceneManager.UnloadSceneAsync(_currentLevel);
+            }
+
+            string levelName = "Level " + idx.ToString();
+
+            enabled = false;
+            yield return SceneManager.LoadSceneAsync(levelName, LoadSceneMode.Additive);
+            SceneManager.SetActiveScene(SceneManager.GetSceneByName(levelName));
+            enabled = true;
+
+            _currentLevel = idx;
+        }
+
+        yield return null;
     }
 }
