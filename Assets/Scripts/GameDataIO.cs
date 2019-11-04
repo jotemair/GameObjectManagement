@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using UnityEngine;
 
 public class GameDataWriter
@@ -44,6 +42,11 @@ public class GameDataWriter
         _writer.Write(data.b);
         _writer.Write(data.a);
     }
+
+    public void Write(Random.State value)
+    {
+        _writer.Write(JsonUtility.ToJson(value));
+    }
 }
 
 public class GameDataReader
@@ -78,5 +81,10 @@ public class GameDataReader
     public Color ReadColor()
     {
         return new Color(ReadFloat(), ReadFloat(), ReadFloat(), ReadFloat());
+    }
+
+    public Random.State ReadRandomState()
+    {
+        return JsonUtility.FromJson<Random.State>(_reader.ReadString());
     }
 }

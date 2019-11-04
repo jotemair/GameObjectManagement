@@ -1146,7 +1146,7 @@ MonoBehaviour:
   _loadGameKey: 108
   _destroyKey: 120
   _storage: {fileID: 908840645}
-  _levelCount: 2
+  _levelCount: 5
   _creationSpeed: 0
   _destructionSpeed: 0
   _spawnZone: {fileID: 0}

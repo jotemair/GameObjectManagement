@@ -5,7 +5,7 @@ using UnityEngine.SceneManagement;
 
 public class Game : PersistableObject
 {
-    const int saveVersion = 3;
+    const int saveVersion = 4;
 
     [SerializeField]
     public ShapeFactory _shapeFactory = null;
@@ -195,6 +195,7 @@ public class Game : PersistableObject
         writer.Write(saveVersion);
 
         writer.Write(_shapes.Count);
+        writer.Write(Random.state);
         writer.Write(_currentLevel);
         foreach (var shape in _shapes)
         {
@@ -218,6 +219,11 @@ public class Game : PersistableObject
         }
 
         int count = reader.ReadInt();
+
+        if (saveVersion > 3)
+        {
+            Random.state = reader.ReadRandomState();
+        }
 
         StartCoroutine(LoadLevel((saveVersion < 3) ? 1 : reader.ReadInt()));
 
