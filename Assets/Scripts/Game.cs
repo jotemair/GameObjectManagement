@@ -38,6 +38,8 @@ public class Game : PersistableObject
     [SerializeField]
     private float _creationSpeed = 0f;
 
+    private Random.State _mainRandomState = default;
+
     public float CreationSpeed
     {
         get { return _creationSpeed; }
@@ -74,6 +76,8 @@ public class Game : PersistableObject
 
     private void Start()
     {
+        _mainRandomState = Random.state;
+
         if (Application.isEditor)
         {
             for (int i = 0; i < SceneManager.sceneCount; i++)
@@ -88,6 +92,7 @@ public class Game : PersistableObject
             }
         }
 
+        StartNewGame();
         StartCoroutine(LoadLevel(1));
     }
 
@@ -170,6 +175,11 @@ public class Game : PersistableObject
 
     private void StartNewGame()
     {
+        Random.state = _mainRandomState;
+        int seed = Random.Range(0, int.MaxValue) ^ (int)Time.unscaledTime;
+        _mainRandomState = Random.state;
+        Random.InitState(seed);
+
         foreach (var persObj in _shapes)
         {
             _shapeFactory.Reclaim(persObj);
@@ -220,9 +230,10 @@ public class Game : PersistableObject
 
         int count = reader.ReadInt();
 
+        Random.State randomState = default;
         if (saveVersion > 3)
         {
-            Random.state = reader.ReadRandomState();
+            randomState = reader.ReadRandomState();
         }
 
         StartCoroutine(LoadLevel((saveVersion < 3) ? 1 : reader.ReadInt()));
@@ -232,6 +243,11 @@ public class Game : PersistableObject
             Shape shapeInstance = _shapeFactory.Get(reader.ReadInt(), ((fileVersion > 1) ? (reader.ReadInt()) : (0)));
             shapeInstance.Load(reader);
             _shapes.Add(shapeInstance);
+        }
+
+        if (saveVersion > 3)
+        {
+            Random.state = randomState;
         }
     }
 
