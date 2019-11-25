@@ -9,6 +9,7 @@ public class CubeSpawnZone : SpawnZone
     {
         get
         {
+            // If we should spawn on the surface only, we select a random axis, in which we'll move the position to the face of the cubes
             int selectedSurface = _surfaceOnly ? Random.Range(0, 3) : -1;
 
             Vector3 point = Vector3.zero;

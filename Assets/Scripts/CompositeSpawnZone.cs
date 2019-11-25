@@ -10,6 +10,7 @@ public class CompositeSpawnZone : SpawnZone
     {
         get
         {
+            // Return a spawnpoint from a randomly selected SpawnZone from the spawnZones list
             return spawnZones[Random.Range(0, spawnZones.Count)].SpawnPoint;
         }
     }

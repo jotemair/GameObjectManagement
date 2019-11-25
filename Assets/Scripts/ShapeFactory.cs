@@ -5,19 +5,25 @@ using UnityEngine.SceneManagement;
 [CreateAssetMenu]
 public class ShapeFactory : ScriptableObject
 {
+    // List of possible shapes
     [SerializeField]
     private List<Shape> _shapePrefabs = new List<Shape>();
 
+    // List of possible materials
     [SerializeField]
     private List<Material> _materials = new List<Material>();
 
+    // Should we recycle removed objects or not
     [SerializeField]
     private bool _recycle = false;
 
+    // The pool of shape instances for each shape type
     private List<List<Shape>> _pools = null;
 
+    // The scene where the pooled objects are stored
     private Scene _poolScene = default;
 
+    // Instantiate a shape through the factory
     public Shape Get(int shapeID = 0, int materialID = 0)
     {
         Shape shapeInstance = null;
@@ -55,6 +61,7 @@ public class ShapeFactory : ScriptableObject
         return shapeInstance;
     }
 
+    // Reclaim shape instances that are no longer needed
     public void Reclaim(Shape shapeToRecycle)
     {
         if (_recycle)
@@ -72,11 +79,13 @@ public class ShapeFactory : ScriptableObject
         }
     }
 
+    // Get a random shape
     public Shape GetRandom()
     {
         return Get(Random.Range(0, _shapePrefabs.Count), Random.Range(0, _materials.Count));
     }
 
+    // Create object pools for reclaimed shape instances
     private void CreatePools()
     {
         _pools = new List<List<Shape>>();

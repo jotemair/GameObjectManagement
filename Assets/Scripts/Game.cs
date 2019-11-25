@@ -5,10 +5,13 @@ using UnityEngine.SceneManagement;
 
 public class Game : PersistableObject
 {
+    // Version number to manage changes to how we read and write information to save files
     const int saveVersion = 4;
 
     [SerializeField]
     public ShapeFactory _shapeFactory = null;
+
+    // Input keys
 
     [SerializeField]
     private KeyCode _createKey = KeyCode.C;
@@ -27,18 +30,23 @@ public class Game : PersistableObject
 
     private List<Shape> _shapes = new List<Shape>();
 
+    // Reference to storage
     [SerializeField]
     private PersistentStorage _storage = null;
 
+    // Number of level scenes
     [SerializeField]
-    private int _levelCount = 2;
+    private int _levelCount = 5;
 
     private int _currentLevel = -1;
 
+    // Keeping track of the random state to allow saving/loading the state of the random number generator
+    private Random.State _mainRandomState = default;
+
+    // Automatic creation and destruction speed
+
     [SerializeField]
     private float _creationSpeed = 0f;
-
-    private Random.State _mainRandomState = default;
 
     public float CreationSpeed
     {
@@ -58,6 +66,7 @@ public class Game : PersistableObject
 
     private float _destructionTimer = 0f;
 
+    // Reference to spawnzone
     [SerializeField]
     private SpawnZone _spawnZone = null;
 
@@ -67,6 +76,7 @@ public class Game : PersistableObject
         set { _spawnZone = value; }
     }
 
+    // Singleton like access
     private static Game _instance = null;
 
     public static Game Instance
@@ -150,6 +160,7 @@ public class Game : PersistableObject
         }
     }
 
+    // Create a new random shape
     private void CreateShape()
     {
         Shape shapeInstance = _shapeFactory.GetRandom();
@@ -161,6 +172,7 @@ public class Game : PersistableObject
         _shapes.Add(shapeInstance);
     }
 
+    // Destroy a randomly selected shape instance
     private void DestroyShape()
     {
         if (_shapes.Count > 0)
@@ -173,6 +185,7 @@ public class Game : PersistableObject
         }
     }
 
+    // Clear the scene and start a new game
     private void StartNewGame()
     {
         Random.state = _mainRandomState;
@@ -200,6 +213,7 @@ public class Game : PersistableObject
         _storage.Load(this);
     }
 
+    // Save game data
     public override void Save(GameDataWriter writer)
     {
         writer.Write(saveVersion);
@@ -218,6 +232,7 @@ public class Game : PersistableObject
         }
     }
 
+    // Load game data
     public override void Load(GameDataReader reader)
     {
         int fileVersion = reader.ReadInt();
@@ -251,6 +266,7 @@ public class Game : PersistableObject
         }
     }
 
+    // Load level scene
     private IEnumerator LoadLevel(int idx)
     {
         if (_currentLevel != idx)

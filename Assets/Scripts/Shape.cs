@@ -59,12 +59,14 @@ public class Shape : PersistableObject
         }
     }
 
+    // Set the material of the shape
     public void SetMaterial(Material material, int materialId)
     {
         MeshRenderer.material = material;
         MaterialID = materialId;
     }
 
+    // Set the color of the shape
     public void SetColor(Color color)
     {
         _color = color;
